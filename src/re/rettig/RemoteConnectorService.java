@@ -223,7 +223,7 @@ public class RemoteConnectorService {
 				Thread.sleep(2);
 			} catch (InterruptedException e) {}
 		}
-		write("send " + pulses.size() + "\r");		
+		write("send " + pulses.size() + "\r");	
 	}
    
 	public void write(String string) throws IOException {

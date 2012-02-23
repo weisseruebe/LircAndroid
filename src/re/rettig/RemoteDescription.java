@@ -8,7 +8,7 @@ import java.util.List;
 
 public class RemoteDescription {
 	int freq = 38000;
-	
+
 	//Apple	  
 	//	Integer[] header = {9065,4484};
 	//	Integer[] one    = {574,1668};
@@ -18,45 +18,50 @@ public class RemoteDescription {
 	//Byte[] preBitsData = {0x77,(byte) 0xE1};
 	//Byte[] postBitsData = {(byte) 0x97};
 	//int ptrail = 567;
-	
+
 	//Pana 0239
 
-	Integer[] header = {3437,1634};
-	Integer[] one    = {500,1200};
-	Integer[] zero   = {500,345};
+	Integer[] header = {0,0};
+	Integer[] one    = {0,0};
+	Integer[] zero   = {0,0};
 	Byte[] preBitsData = {(byte) 0x40,(byte) 0x04, 0x0D};
 	Byte[] postBitsData = {};
 	int ptrail = 479;
-	
+
 	int preBits = 16;
 	int postBits = 8;
 	int gap = 37600;
 	int togglebit = 0;
 
-	HashMap<String, Byte[]> codes = new HashMap<String, Byte[]>();
+	HashMap<String, Code> codes = new HashMap<String, Code>();
 
 	private List<Integer> bit2pulses(boolean b){
 		return b ? Arrays.asList(one) : Arrays.asList(zero);
 	}
 
 	public RemoteDescription() {
-		
+
 	}
 
-	public List<Integer> getPulses(String code) throws Exception{
-
-		Byte[] dataPulses = codes.get(code);
-		if (dataPulses == null){
+	public List<Integer> getPulses(String command) throws Exception{
+		if (!codes.containsKey(command)){
 			throw new Exception("Code not available");
 		}
-		List<Integer> pulses = new ArrayList<Integer>();
-		pulses.addAll(Arrays.asList(header));
+		Code code = codes.get(command);
+		if (code.isRaw()){
+			return ((RawCode)code).pulses;
+		} else{
 
-		pulses.addAll(code2Pulses(preBitsData));
-		pulses.addAll(code2Pulses(dataPulses));
-		pulses.addAll(code2Pulses(postBitsData));
-		pulses.add(ptrail);
-		return pulses;
+			Byte[] dataPulses = ((HexCode)code).codes;
+			List<Integer> pulses = new ArrayList<Integer>();
+			pulses.addAll(Arrays.asList(header));
+
+			pulses.addAll(code2Pulses(preBitsData));
+			pulses.addAll(code2Pulses(dataPulses));
+			pulses.addAll(code2Pulses(postBitsData));
+			pulses.add(ptrail);
+			return pulses;
+		}
 	}
 
 	private List<Integer> code2Pulses(Byte[]data){
@@ -82,11 +87,16 @@ public class RemoteDescription {
 		}
 		return buffer.toString();
 	}
-	
+
 	public String toString(){
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("Freq "+freq);
 		buffer.append("Header "+header[0]+" "+header[1]);
+		for (String cmd:codes.keySet()){
+			buffer.append(cmd+": ");
+			buffer.append(pulsesToString(cmd));
+			buffer.append("\n");
+		}
 		return buffer.toString();
 	}
 }

@@ -1,10 +1,17 @@
 package re.rettig;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
+/***
+ * Android
+ * @author andreasrettig
+ *
+ */
+
 public class RemoteLoader {
-	private static final int DEFAULT_REPEAT = 0;
 	Processor processor;
 
 	public RemoteDescription load(String name) throws IOException {
@@ -70,6 +77,8 @@ public class RemoteLoader {
 				remoteDescription.ptrail = Integer.parseInt(data);
 			} else if (line.startsWith("begin codes")) {
 				processor = codeProcessor;
+			} else if (line.startsWith("begin raw_codes")) {
+				processor = rawProcessor;
 			} 
 
 		}
@@ -82,9 +91,31 @@ public class RemoteLoader {
 				processor = remoteProcessor;
 			} else {
 				String[] splitted = split(line);
-				if (splitted.length == 2){
-					remoteDescription.codes.put(splitted[0], toByteArray(splitted[1]));
+				if (splitted.length >= 2){
+					remoteDescription.codes.put(splitted[0], new HexCode(toByteArray(splitted[1])));
 				}
+			}
+		}
+	};
+	
+	Processor rawProcessor = new Processor() {
+		String name;
+		List<Integer> pulses = new ArrayList<Integer>();
+		
+		public void process(String line, RemoteDescription remoteDescription) {
+			if (line.startsWith("end raw_codes")) {
+				if (pulses.size()>0 & name!=null){
+					remoteDescription.codes.put(name, new RawCode(pulses));
+				}
+				processor = remoteProcessor;
+			} else if (line.startsWith("name")) {
+				if (pulses.size()>0 & name!=null){
+					remoteDescription.codes.put(name, new RawCode(pulses));
+				}
+				pulses = new ArrayList<Integer>();
+				name = line.split(" ")[1];
+			} else {
+				pulses.addAll(toIntList(line));
 			}
 		}
 	};
@@ -101,9 +132,12 @@ public class RemoteLoader {
 		return buffer;
 	}
 	
-	public static void main(String[] args) throws IOException {
-		RemoteLoader remoteLoader = new RemoteLoader();
-		RemoteDescription desc = remoteLoader.load("/Users/andreasrettig/Desktop/remotes/apple/A1156");
+	protected List<Integer> toIntList(String string) {
+		List<Integer> result = new ArrayList<Integer>();
+		for (String n:split(string)){
+			if (n.length()>0)result.add(Integer.parseInt(n));
+		}
+		return result;
 	}
 
 }
