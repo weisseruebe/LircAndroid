@@ -4,22 +4,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-
-
 public class RemoteDescription {
 	int freq = 38000;
 
-	//Apple	  
-	//	Integer[] header = {9065,4484};
-	//	Integer[] one    = {574,1668};
-	//	Integer[] zero   = {574,574};
-	//	Integer[] repeat = {9031,2242};
-	//Apple
-	//Byte[] preBitsData = {0x77,(byte) 0xE1};
-	//Byte[] postBitsData = {(byte) 0x97};
-	//int ptrail = 567;
-
-	//Pana 0239
+	String name = "";
 
 	Integer[] header = {0,0};
 	Integer[] one    = {0,0};
@@ -37,10 +25,6 @@ public class RemoteDescription {
 
 	private List<Integer> bit2pulses(boolean b){
 		return b ? Arrays.asList(one) : Arrays.asList(zero);
-	}
-
-	public RemoteDescription() {
-
 	}
 
 	public List<Integer> getPulses(String command) throws Exception{

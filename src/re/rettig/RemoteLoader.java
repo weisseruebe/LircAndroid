@@ -28,8 +28,7 @@ public class RemoteLoader {
 		return remoteDescription;
 	}
 
-	private void processLine(String nextLine,
-			RemoteDescription remoteDescription) {
+	private void processLine(String nextLine, RemoteDescription remoteDescription) {
 		if (nextLine.startsWith("begin remote")) {
 			processor = remoteProcessor;
 		}
@@ -50,6 +49,9 @@ public class RemoteLoader {
 		return new Integer[]{Integer.parseInt(strings[1]),Integer.parseInt(strings[2])};
 	}
 
+	/***
+	 * Processes a Remote Description File
+	 */
 	Processor remoteProcessor = new Processor() {
 
 		public void process(String line, RemoteDescription remoteDescription) {
@@ -59,7 +61,7 @@ public class RemoteLoader {
 				String[] values = split(line);
 				remoteDescription.header = parseInts(values);
 			} else if (line.startsWith("name")) {
-				System.out.println("Name " + line);
+				remoteDescription.name = split(line)[1];
 			} else if (line.startsWith("zero")) {
 				String[] values = split(line);
 				remoteDescription.zero = parseInts(values);
@@ -84,6 +86,9 @@ public class RemoteLoader {
 		}
 	};
 
+	/***
+	 * Processes a Code block
+	 */
 	Processor codeProcessor = new Processor() {
 
 		public void process(String line, RemoteDescription remoteDescription) {
@@ -97,11 +102,14 @@ public class RemoteLoader {
 			}
 		}
 	};
-	
+
+	/***
+	 * Processes a raw_code block
+	 */
 	Processor rawProcessor = new Processor() {
 		String name;
 		List<Integer> pulses = new ArrayList<Integer>();
-		
+
 		public void process(String line, RemoteDescription remoteDescription) {
 			if (line.startsWith("end raw_codes")) {
 				if (pulses.size()>0 & name!=null){
@@ -131,7 +139,7 @@ public class RemoteLoader {
 		}
 		return buffer;
 	}
-	
+
 	protected List<Integer> toIntList(String string) {
 		List<Integer> result = new ArrayList<Integer>();
 		for (String n:split(string)){
